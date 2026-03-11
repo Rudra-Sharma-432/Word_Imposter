@@ -120,16 +120,29 @@ function startGame(room) {
   const word = subCategory[Math.floor(Math.random() * subCategory.length)];
 
 
+  // arrange the players in random order for the meeting discussion and store it in the database to loop through it in the startMeeting function
+  const playerOrder = players.sort(() => Math.random() - 0.5);
+
+
   roomRef.update({
     state: "playing",
     playerCount: playerCount,
     alivePlayers: playerCount,
+
+    // TODO: arrange the order of meeting randomly in the room.game.playerOrder and loop through it in startMeeting function
     game: {
       round: 1,
       imposter: imposter,
-      word: word
+      word: word,
+      currentSpeakerIndex: 0,
+      discussionOrder: playerOrder,
     }
+
   });
+
+
+
+
 
   console.log(room);
 
@@ -145,7 +158,17 @@ async function joinStartedGame(room) {
 
   goToPanel("meeting");
 
+  const playerCount = room.players ? Object.keys(room.players).length : 0;
+
+
+  // create the meeting and voting tablets
+  createDivs(document_MEETING_TABLET, playerCount);
+  modifyMeetingTablet(playerCount);
+  createDivs(document_VOTNG_TABLET, playerCount);
+  document.getElementById('meeting-tablet-container').classList.remove("hidden");
+
   // show the role for 3 seconds
+  document_SHOW_ROLE_DIV.style.backgroundColor = "var(--card-bg)";
   document_SHOW_ROLE_DIV.style.display = "flex";
   if (currentPlayer === game.imposter) {
     document_SHOW_ROLE_DIV.innerHTML = "<h1>You are the IMPOSTER</h1>";
@@ -160,6 +183,25 @@ async function joinStartedGame(room) {
   document_SHOW_ROLE_DIV.style.display = "none";
 
 
+  startMeeting(room);
+}
+
+
+async function startMeeting(room) {
+  console.log("Meeting started");
+
+  const playerCount = room.players ? Object.keys(room.players).length : 0;
+  console.log(room.game.discussionOrder[0]);
+  console.log(playerCount);
+  for (let i = 0; i < playerCount; i++) {
+    console.log(i)
+    playerTurn(i, room);
+
+    await wait()
+  }
+
+  console.log("Meeting ended");
+
 }
 
 
@@ -169,7 +211,7 @@ const WORD_LIST = [
 
   /* Nature */
   [
-    ["river", "waterfall", "ocean", "lagoon", "reef"],
+    ["river", "waterfall", "ocean", "reef"],
     ["valley", "canyon", "cliff", "glacier", "desert", "dune", "swamp", "cave", "forest", "jungle", "savanna", "meadow", "island"],
     ["sunrise", "sunset", "rainbow", "storm", "thunder", "shadow"],
     ["planet", "galaxy", "satellite"]

@@ -106,13 +106,13 @@ div {
   width: 220px;
 }
 
-#voating-panel {
+#voting-panel {
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
 }
 
-#voating-tablet {
+#voting-tablet {
   background-color: var(--border);
   padding: 20px;
   border-radius: 25px;
@@ -130,4 +130,30 @@ div {
 #voting-panel h2 {
   text-align: center;
   margin-bottom: 12px;
+}
+
+#meeting-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#meeting-tablet-container {
+  width: 60vw;
+}
+
+#meeting-tablet {
+  background-color: var(--border);
+  padding: 20px;
+  border-radius: 25px;
+
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+
+  width: 100%;
+}
+
+.child-div {
+  align-items: center;
 }

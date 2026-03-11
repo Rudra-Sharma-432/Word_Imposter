@@ -135,18 +135,20 @@ function wait(ms) {
 
 
 
+const document_MEETING_TABLET = document.getElementById("meeting-tablet");
+const document_VOTNG_TABLET = document.getElementById("voting-tablet");
 
-const document_VOATING_TABLET = document.getElementById("voating-tablet");
 function createDivs(parentDIV, num) {
-  parentDIV.innerHTML = "";
+  parentDIV.innerHTML = '';
 
   // 2. Loop 'num' times to create the child divs
   for (let i = 0; i < num; i++) {
     // 3. Create a new div element for each iteration
     const newDiv = document.createElement("div");
 
+    newDiv.id = `${parentDIV.id}-child-${i + 1}`; // Set a unique ID for the new div
     // 4. Customize the new div (optional)
-    newDiv.textContent = `Div number ${i + 1}`; // Add some text content
+    newDiv.innerHTML = `<p>Div number ${i + 1}</p>`; // Add some text content
     newDiv.style.margin = "0px";
     newDiv.style.padding = "15px 20px"; // Set padding
     newDiv.style.backgroundColor = "#000"; // Set background color
@@ -158,5 +160,48 @@ function createDivs(parentDIV, num) {
   }
 }
 
-// Call the function to create
-createDivs(document_VOATING_TABLET, 7);
+function modifyMeetingTablet(numberOfPlayers) {
+  for (let i = 0; i < numberOfPlayers; i++) {
+    const div = document.getElementById(`meeting-tablet-child-${i + 1}`);
+
+
+
+  }
+}
+
+createDivs(document_MEETING_TABLET, 7);
+modifyMeetingTablet(7);
+
+
+// when 'i' index player's turn comes
+async function playerTurn(i, room) {
+
+  const div = document.getElementById(`meeting-tablet-child-${i + 1}`);
+  div.style.backgroundColor = "var(--accent)";
+  div.style.color = "vat(--text-secondary)";
+  div.style.width = "100%";
+
+
+  // TODO: add onclick="nextPlayerTurn()" and alos add a timer of 30 seconds for each player's turn
+  div.innerHTML = `<p>Player ${i + 1}</p> <button style="padding: 4px 5px;" id="skip-disussion-order-${i + 1}">skip turn</button> <p id='timer'>45 sec</p>`;
+  div.style.flexDirection = "row";
+  div.style.justifyContent = "space-between";
+
+
+  if (currentPlayer === room.game.discussionOrder[i]) {
+    document.getElementById(`skip-disussion-order-${i + 1}`).style.display = "block";
+  } else {
+    document.getElementById(`skip-disussion-order-${i + 1}`).style.display = "none";
+  }
+
+
+  for (let j = 30; j >= 0; j--) {
+    await wait(1000);
+    document.getElementById("timer").innerText = `${j} sec`;
+    console.log(j);
+  }
+
+  console.log(`Player ${i + 1} turn ended`);
+
+
+}
