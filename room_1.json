@@ -1,0 +1,39 @@
+{
+  "game": {
+    "currentSpeakerIndex": 0,
+    "discussionOrder": "[Player1, Player2, Player3]",
+    "imposter": "player1",
+    "round": 1,
+    "word": "river"
+  },
+  "host": "player1",
+  "password": "123a",
+  "players": {
+    "player1": {
+      "name": "Rudra",
+      "score": 0,
+      "status": "alive"
+    },
+    "player2": {
+      "name": "Hardik",
+      "score": 0,
+      "status": "alive"
+    },
+    "player3": {
+      "name": "Gaurav",
+      "score": 0,
+      "status": "alive"
+    }
+  },
+  "settings": {
+    "eachPlayerDiscussionTime": 20,
+    "maxPlayers": 8,
+    "rounds": 3
+  },
+  "state": "lobby",
+  "votes": {
+    "player1": "player3",
+    "player2": "player3",
+    "player3": "skip"
+  }
+}

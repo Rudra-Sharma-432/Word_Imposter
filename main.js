@@ -40,62 +40,95 @@ function goToPanel(name) {
 
 
 db.ref("games/Word_Imposter/rooms")
-.on("value", snapshot => {
+  .on("value", snapshot => {
 
-  const rooms = snapshot.val();
+    const rooms = snapshot.val();
 
-  const container = document.getElementById("rooms");
-  container.innerHTML = "";
+    const container = document.getElementById("rooms");
+    container.innerHTML = "";
 
-  for(const roomId in rooms){
+    if (!rooms) return;
+    for (const roomId in rooms) {
 
-    const room = rooms[roomId];
-    const playerCount = Object.keys(room.players).length;
-    const maxPlayers = room.settings.maxPlayers;
+      const room = rooms[roomId];
+      const playerCount = room.players ? Object.keys(room.players).length : 0;
+      const maxPlayers = room.settings.maxPlayers;
 
-    const div = document.createElement("div");
-    div.className = "room-joining-div";
+      const div = document.createElement("div");
+      div.className = "room-joining-div";
 
-    div.innerHTML = `
+      div.innerHTML = `
       <p>${roomId}</p>
       <p>Players: ${playerCount}/${maxPlayers}</p>
     `;
 
-    div.onclick = () => joinRoom(roomId);
+      div.onclick = () => joinRoom(roomId);
 
-    container.appendChild(div);
+      container.appendChild(div);
 
-  }
+    }
 
-});
+  });
 
 
+
+const document_LOBBY_PANEL = document.getElementById("lobby-panel");
 const document_LOBBY_ROOM_ID = document.getElementById("lobby-room-id");
 const document_LOBBY_HOST = document.getElementById("lobby-host");
 const document_LOBBY_PLAYER_COUNT = document.getElementById("lobby-player-count");
 const document_LOBBY_PLAYER_LIST = document.getElementById("lobby-player-list");
 const document_LOBBY_START_BUTTON = document.getElementById("lobby-start-button");
+const document_SHOW_ROLE_DIV = document.getElementById("show-role");
 
-function updatePlayersUI(room){
+
+function updatePlayersUI(room) {
   console.log("update player ui");
   console.log(room);
 
   document_LOBBY_ROOM_ID.innerText = "room id : " + room.roomID;
   document_LOBBY_HOST.innerText = "host : " + room.players[room.host].name;
-  document_LOBBY_PLAYER_COUNT.innerText = "player count : " + Object.keys(room.players).length +"/"+ room.settings.maxPlayers;
+  document_LOBBY_PLAYER_COUNT.innerText = "player count : " + Object.keys(room.players).length + "/" + room.settings.maxPlayers;
 
-  
-  if (currentPlayer === room.host){
+
+  if (currentPlayer === room.host) {
     document_LOBBY_START_BUTTON.classList.remove("hidden");
   } else {
     document_LOBBY_START_BUTTON.classList.add("hidden");
   }
 
   let playerListHTML = "";
-  for(const playerId in room.players){
+  for (const playerId in room.players) {
     const player = room.players[playerId];
     playerListHTML += `<p>${player.name}</p>`;
   }
   document_LOBBY_PLAYER_LIST.innerHTML = playerListHTML;
 
+}
+
+
+// Start Gmae by host
+async function startGameByHost() {
+  const roomId = document_LOBBY_ROOM_ID.innerText.trim().split(/\s+/).pop();
+  const roomRef = db.ref("games/Word_Imposter/rooms/room_" + roomId);
+
+  document_LOBBY_START_BUTTON.classList.add("hidden");
+  document_LOBBY_PANEL.innerHTML += "<h2>Starting Game in 3...</h2>";
+  await wait(1000);
+  document_LOBBY_PANEL.innerHTML = document_LOBBY_PANEL.innerHTML.replace(/3\.\.\./, "2...");
+  await wait(1000);
+  document_LOBBY_PANEL.innerHTML = document_LOBBY_PANEL.innerHTML.replace(/2\.\.\./, "1...");
+  await wait(1000);
+  document_LOBBY_PANEL.innerHTML = document_LOBBY_PANEL.innerHTML.replace(/1\.\.\./, "...");
+
+  roomRef.update({
+    state: "playing",
+  });
+
+
+}
+
+
+// wait function
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

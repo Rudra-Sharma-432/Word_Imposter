@@ -1,5 +1,8 @@
 // this is like the back end of the game.
 
+let currentRoom = null;
+let currentPlayer = null;
+
 // Create a Room System
 function createRoom(playerName) {
 
@@ -54,14 +57,18 @@ function joinRoom(roomName, playerId) {
 
   if (!playerId) {
     playerId = "player_" + Date.now();
-    var playerName = "Player"; // later from account system
+    var playerName = "Player";
 
-    db.ref("games/Word_Imposter/rooms/" + roomName + "/players/" + playerId).set({
+    const playerRef = db.ref("games/Word_Imposter/rooms/" + roomName + "/players/" + playerId);
+
+    playerRef.set({
       name: playerName,
       score: 0
     });
-  }
 
+    // AUTO REMOVE PLAYER WHEN THEY LEAVE
+    playerRef.onDisconnect().remove();
+  }
 
   currentRoom = roomName;
   currentPlayer = playerId;
@@ -82,47 +89,44 @@ function listenToRoom(roomName) {
 
       updatePlayersUI(room);
 
-      if (room.state === "playing") {
+      // ONLY HOST creates the game
+      if (room.state === "playing" && currentPlayer === room.host && room.game && !room.game.word) {
         startGame(room);
+      }
+
+      // everyone joins the started game
+      if (room.state === "playing" && room.game.word) {
+        joinStartedGame(room);
       }
 
     });
 
 }
 
-// Start Gmae by host
-function startGameByHost() {
-  const roomId = document_LOBBY_ROOM_ID.innerText.trim().split(/\s+/).pop();
-  const roomRef = db.ref("games/Word_Imposter/rooms/room_" + roomId);
-
-  roomRef.update({
-    state: "playing",
-  });
-}
 
 
-// join the started game
+// host start the game and join it
 function startGame(room) {
 
-  const roomRef = db.ref("games/Word_Imposter/rooms/room_" + room.roomID);
-
+  const roomRef = db.ref("games/Word_Imposter/rooms/" + currentRoom);
 
   const players = Object.keys(room.players);
+  const playerCount = room.players ? Object.keys(room.players).length : 0;
 
   const imposter = players[Math.floor(Math.random() * players.length)];
-  room.game.imposter = imposter;
 
-  const word = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
-  room.game.word = word;
+  const category = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+  const subCategory = category[Math.floor(Math.random() * category.length)];
+  const word = subCategory[Math.floor(Math.random() * subCategory.length)];
 
 
   roomRef.update({
     state: "playing",
-    playerCount: players.length,
-    alivePlayers: players.length,
+    playerCount: playerCount,
+    alivePlayers: playerCount,
     game: {
       round: 1,
-      impster: imposter,
+      imposter: imposter,
       word: word
     }
   });
@@ -132,18 +136,33 @@ function startGame(room) {
 }
 
 
-// Player Role logic
-// function startGame(room){
-// 
-//   const game = room.game;
-// 
-//   if(currentPlayer === game.imposter){
-//       showRole("You are the IMPOSTER");
-//   }else{
-//       showRole("Word: " + game.word);
-//   }
-// 
-// }
+// other players join the game
+async function joinStartedGame(room) {
+
+  console.log("Game started");
+
+  const game = room.game;
+
+  goToPanel("meeting");
+
+  // show the role for 3 seconds
+  document_SHOW_ROLE_DIV.style.display = "flex";
+  if (currentPlayer === game.imposter) {
+    document_SHOW_ROLE_DIV.innerHTML = "<h1>You are the IMPOSTER</h1>";
+    console.log("You are the IMPOSTER");
+  } else {
+    document_SHOW_ROLE_DIV.innerHTML = `<h1>Word: ${game.word}</h1>`;
+    console.log("Word:", game.word);
+  }
+
+  await wait(3000);
+  document_SHOW_ROLE_DIV.innerHTML = "";
+  document_SHOW_ROLE_DIV.style.display = "none";
+
+
+}
+
+
 
 
 const WORD_LIST = [
