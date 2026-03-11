@@ -194,14 +194,16 @@ async function startMeeting(room) {
   console.log(room.game.discussionOrder[0]);
   console.log(playerCount);
   for (let i = 0; i < playerCount; i++) {
-    console.log(i)
+    console.log("player " + (i + 1) + " turn started");
     playerTurn(i, room);
 
-    await wait()
+    await wait(34 * 1000); // wait for 34 seconds for each player's turn
   }
 
   console.log("Meeting ended");
 
+  document.getElementById('meeting-tablet-container').classList.add("hidden");
+  goToPanel("voting");
 }
 
 

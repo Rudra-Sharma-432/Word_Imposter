@@ -183,21 +183,14 @@ async function playerTurn(i, room) {
 
 
   // TODO: add onclick="nextPlayerTurn()" and alos add a timer of 30 seconds for each player's turn
-  div.innerHTML = `<p>Player ${i + 1}</p> <button style="padding: 4px 5px;" id="skip-disussion-order-${i + 1}">skip turn</button> <p id='timer'>45 sec</p>`;
+  div.innerHTML = `<p>Player ${i + 1}</p> <p id='player${i+1}-timer'>30 sec</p>`;
   div.style.flexDirection = "row";
   div.style.justifyContent = "space-between";
 
 
-  if (currentPlayer === room.game.discussionOrder[i]) {
-    document.getElementById(`skip-disussion-order-${i + 1}`).style.display = "block";
-  } else {
-    document.getElementById(`skip-disussion-order-${i + 1}`).style.display = "none";
-  }
-
-
   for (let j = 30; j >= 0; j--) {
     await wait(1000);
-    document.getElementById("timer").innerText = `${j} sec`;
+    document.getElementById(`player${i+1}-timer`).innerText = `${j} sec`;
     console.log(j);
   }
 
