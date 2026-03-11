@@ -46,7 +46,7 @@ h1 {
 }
 
 div {
-  margin-top: 30px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -56,9 +56,9 @@ div {
 
 .room-joining-div {
   background-color: var(--border);
-  padding: 20px;
+  padding: 15px 20px;
   border-radius: 10px;
-  width: 400px;
+  width: 350px;
   text-align: center;
   cursor: pointer;
   margin: 0;
@@ -84,6 +84,12 @@ div {
   gap: 15px;
 }
 
+#main-menu-panel,
+#play-panel,
+#rooms {
+  margin-top: 80px;
+}
+
 #main-menu-panel button {
   width: 140px;
 }
@@ -98,4 +104,30 @@ div {
 
 #play-panel button:hover {
   width: 220px;
+}
+
+#voating-panel {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#voating-tablet {
+  background-color: var(--border);
+  padding: 20px;
+  border-radius: 25px;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  width: 120%;
+  /* or any size you want */
+  margin: 0 auto;
+  /* centers it */
+}
+
+#voting-panel h2 {
+  text-align: center;
+  margin-bottom: 12px;
 }

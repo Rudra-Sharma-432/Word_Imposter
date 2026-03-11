@@ -132,3 +132,31 @@ async function startGameByHost() {
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+
+
+
+const document_VOATING_TABLET = document.getElementById("voating-tablet");
+function createDivs(parentDIV, num) {
+  parentDIV.innerHTML = "";
+
+  // 2. Loop 'num' times to create the child divs
+  for (let i = 0; i < num; i++) {
+    // 3. Create a new div element for each iteration
+    const newDiv = document.createElement("div");
+
+    // 4. Customize the new div (optional)
+    newDiv.textContent = `Div number ${i + 1}`; // Add some text content
+    newDiv.style.margin = "0px";
+    newDiv.style.padding = "15px 20px"; // Set padding
+    newDiv.style.backgroundColor = "#000"; // Set background color
+    newDiv.style.borderRadius = "10px"; // Set border radius
+    newDiv.classList.add("child-div"); // Add a CSS class for styling
+
+    // 5. Append the new div to the parent container
+    parentDIV.appendChild(newDiv);
+  }
+}
+
+// Call the function to create
+createDivs(document_VOATING_TABLET, 7);
