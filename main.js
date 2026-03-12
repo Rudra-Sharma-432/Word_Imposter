@@ -1,5 +1,6 @@
 const PANEL_DIVS = document.querySelectorAll('div.panel');
 let gameStarted = false;
+let gameJoined = false;
 
 const firebaseConfig = {
   apiKey: "AIzaSyADn8tGOng9AcBI3s-y-X49i6eoLetyPsE",
@@ -53,7 +54,7 @@ db.ref("games/Word_Imposter/rooms")
           <span class="room-id">${roomId}</span>
           <span class="host-name">${hostName}</span>
         </div>
-        <p>${playerCount}/${maxPlayers}</p>
+        <p>${playerCount}/${room.settings.maxPlayers}</p>
       `;
 
       div.onclick = () => joinRoom(roomId);
@@ -180,7 +181,7 @@ async function playerTurn(i, room, round) {
 
   const timer = room.settings.eachPlayerDiscussionTime;
 
-  div.innerHTML = `<p>${room.players[room.game.discussionOrder[i]].name}</p> <p id='player${i + 1}-timer'>${room.timer} sec</p>`;
+  div.innerHTML = `<p>${room.players[room.game.discussionOrder[i]].name}</p> <p id='player${i + 1}-timer'>${timer} sec</p>`;
   div.style.flexDirection = "row";
   div.style.justifyContent = "space-between";
 

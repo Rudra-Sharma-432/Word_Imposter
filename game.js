@@ -2,7 +2,6 @@
 
 let currentRoom = null;
 let currentPlayer = null;
-let gameJoined = false;
 
 // Create a Room System
 function createRoom(playerName) {
