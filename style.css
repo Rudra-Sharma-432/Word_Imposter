@@ -1,3 +1,8 @@
+/* =====================================================
+   style.css  —  Word Imposter
+   ===================================================== */
+
+/* ── Reset ── */
 * {
   margin: 0;
   padding: 0;
@@ -6,19 +11,21 @@
   font-family: monospace;
 }
 
+/* ── CSS Variables (Theme) ── */
 :root {
-  --text-primary: #F5F5F5;
+  --text-primary:   #F5F5F5;
   --text-secondary: #B0B3B8;
 
-  --accent: #8B5CF6;
+  --accent:       #8B5CF6;
   --accent-hover: #A78BFA;
 
   --danger: #EF4444;
 
   --card-bg: #1F2937;
-  --border: #374151;
+  --border:  #374151;
 }
 
+/* ── Base ── */
 body {
   background-color: var(--card-bg);
 }
@@ -53,7 +60,34 @@ div {
   gap: 20px;
 }
 
+/* ── Back Button ──
+   Replaces the repeated inline SVG back-arrow buttons.
+   Used on every panel that needs a "go back" control. */
+.back-btn {
+  background-color: var(--card-bg) !important;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  height: 40px;
+  width: 40px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.back-btn:hover {
+  background-color: var(--border) !important;
+  border-radius: 50%;
+}
+
+/* ── Room List (Join Room panel) ── */
 .room-joining-div {
   background-color: var(--border);
   padding: 13px;
@@ -62,7 +96,6 @@ div {
   text-align: center;
   cursor: pointer;
   margin: 0;
-
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -85,12 +118,14 @@ div {
   gap: 15px;
 }
 
+/* ── Panel Top Margin Overrides ── */
 #main-menu-panel,
 #play-panel,
 #rooms {
   margin-top: 80px;
 }
 
+/* ── Main Menu Button Widths ── */
 #main-menu-panel button {
   width: 140px;
 }
@@ -99,6 +134,7 @@ div {
   width: 150px;
 }
 
+/* ── Play Panel Button Widths ── */
 #play-panel button {
   width: 210px;
 }
@@ -107,6 +143,7 @@ div {
   width: 220px;
 }
 
+/* ── Voting Panel ── */
 #voting-panel {
   flex-direction: row;
   flex-wrap: wrap;
@@ -117,15 +154,11 @@ div {
   background-color: var(--border);
   padding: 20px;
   border-radius: 25px;
-
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-
   width: 120%;
-  /* or any size you want */
   margin: 0 auto;
-  /* centers it */
 }
 
 #voting-panel h2 {
@@ -133,6 +166,7 @@ div {
   margin-bottom: 12px;
 }
 
+/* ── Meeting Panel ── */
 #meeting-panel {
   display: flex;
   flex-direction: column;
@@ -147,11 +181,9 @@ div {
   background-color: var(--border);
   padding: 20px;
   border-radius: 25px;
-
   flex-direction: column;
   align-items: flex-start;
   gap: 12px;
-
   width: 100%;
 }
 
@@ -159,11 +191,12 @@ div {
   align-items: center;
 }
 
+/* ── Join Room Panel ── */
 #join-room-panel h2 {
   margin-top: 20px;
 }
 
-
+/* ── Create Room Panel ── */
 #create-room-panel div {
   display: grid;
   width: 39vw;
@@ -176,7 +209,6 @@ div {
   padding: 8px;
   border-radius: 10px;
   border: none;
-
   margin-bottom: 20px;
 }
 
@@ -185,12 +217,11 @@ div {
   margin-top: 10px;
 }
 
-
+/* ── Room Info (inside room cards) ── */
 .room-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
-
   margin: 0;
 }
 
@@ -202,6 +233,5 @@ div {
 
 .host-name {
   font-size: 0.9rem;
-  color: #aab0bc;
-  /* slightly muted so it feels secondary */
+  color: #aab0bc; /* muted so it reads as secondary info */
 }

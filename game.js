@@ -1,60 +1,72 @@
-// this is like the back end of the game.
+// game.js
+// ─────────────────────────────────────────────────────────────────
+// Game back-end: all Firebase room/game operations live here.
+// UI helpers and DOM references stay in main.js.
+// Word data lives in words.js.
+// ─────────────────────────────────────────────────────────────────
 
-let currentRoom = null;
+// Tracks which room and player seat belong to this browser tab
+let currentRoom   = null;
 let currentPlayer = null;
 
-// Create a Room System
+
+// ═══════════════════════════════════════════════════════
+//  ROOM MANAGEMENT
+// ═══════════════════════════════════════════════════════
+
+/** Creates a new room in Firebase and immediately joins it as host. */
 function createRoom(playerName) {
 
-  const roomId = Math.floor(Math.random() * 10000);
+  const roomId   = Math.floor(Math.random() * 10000);
   const roomName = "room_" + roomId;
   const playerID = UID;
 
   const roomRef = db.ref("games/Word_Imposter/rooms/" + roomName);
 
   roomRef.set({
-    host: playerID,
-    roomID: roomId,
+    host:     playerID,
+    roomID:   roomId,
     password: document.getElementById("room-password-input").value,
-    state: "lobby",
+    state:    "lobby",
     players: {
       [playerID]: {
-        name: playerName,
-        score: 0,
+        name:   playerName,
+        score:  0,
         status: "alive"
       }
     },
-    playerCount: 1,
+    playerCount:  1,
     alivePlayers: 1,
     settings: {
       eachPlayerDiscussionTime: eachPlayerDiscussionTime,
-      maxPlayers: maxPlayers,
-      maxRounds: totalRounds
+      maxPlayers:               maxPlayers,
+      maxRounds:                totalRounds
     },
     game: {
       round: 1
     }
   });
 
-
+  // After writing to Firebase, join the room as host
   joinRoom(roomName, playerID);
 }
 
 
-// Join Room
+/** Adds the current player to an existing room and starts listening for updates. */
 function joinRoom(roomName, playerId) {
 
+  // If no playerId was supplied this is a regular (non-host) join
   if (!playerId) {
     playerId = UID;
     const playerRef = db.ref("games/Word_Imposter/rooms/" + roomName + "/players/" + playerId);
     playerRef.set({ name: username, score: 0 });
   }
 
-  // set onDisconnect, for BOTH host and joining players
+  // Remove the player from the database automatically if they disconnect
   const playerRef = db.ref("games/Word_Imposter/rooms/" + roomName + "/players/" + playerId);
   playerRef.onDisconnect().remove();
 
-  currentRoom = roomName;
+  currentRoom   = roomName;
   currentPlayer = playerId;
 
   listenToRoom(roomName);
@@ -62,21 +74,20 @@ function joinRoom(roomName, playerId) {
 }
 
 
-// Leave Room
+/** Removes the current player from the room and navigates back to the join screen. */
 function leaveRoom() {
-  gameJoined = false;
+  gameJoined  = false;
   gameStarted = false;
 
   if (currentRoom && currentPlayer) {
-    // Remove player from database
+    // Delete this player's node from the database
     const playerRef = db.ref("games/Word_Imposter/rooms/" + currentRoom + "/players/" + currentPlayer);
     playerRef.remove();
 
-    // Detach the Firebase listener so it stops firing
+    // Detach the Firebase listener so it stops firing after leaving
     db.ref("games/Word_Imposter/rooms/" + currentRoom).off();
 
-    // Reset current state
-    currentRoom = null;
+    currentRoom   = null;
     currentPlayer = null;
   }
 
@@ -84,104 +95,117 @@ function leaveRoom() {
 }
 
 
-// Listen to Room Updates
+// ═══════════════════════════════════════════════════════
+//  REAL-TIME ROOM LISTENER
+// ═══════════════════════════════════════════════════════
+
+/** Attaches a Firebase "value" listener to the room; handles all state transitions. */
 function listenToRoom(roomName) {
   db.ref("games/Word_Imposter/rooms/" + roomName)
     .on("value", snapshot => {
 
       const room = snapshot.val();
 
-      // If room is empty or no players, delete it
+      // ── Auto-delete empty rooms ──
       if (!room || !room.players || Object.keys(room.players).length === 0) {
         db.ref("games/Word_Imposter/rooms/" + roomName).remove();
         return;
       }
 
-      // Redirect everyone back to lobby on restart
+      // ── Game was restarted: send everyone back to lobby ──
       if (room.state === "lobby" && gameStarted) {
         gameStarted = false;
-        gameJoined = false;
+        gameJoined  = false;
         updatePlayersUI(room);
         goToPanel("lobby");
         return;
       }
 
+      // ── Always keep the lobby player list up to date ──
       updatePlayersUI(room);
 
-      // ONLY HOST creates the game
+      // ── Only the host writes game data to Firebase (prevents duplicate writes) ──
       if (room.state === "playing" && currentPlayer === room.host && room.game && !room.game.word) {
         startGame(room);
       }
 
-      // everyone joins the started game
+      // ── Every player joins the game once the word has been set by the host ──
       if (room.state === "playing" && room.game.word && !gameJoined) {
         gameJoined = true;
         joinStartedGame(room);
       }
 
     });
-
 }
 
 
+// ═══════════════════════════════════════════════════════
+//  GAME START  (host only)
+// ═══════════════════════════════════════════════════════
 
-// host start the game and join it
+/**
+ * Called by the host when state changes to "playing" and no word exists yet.
+ * Picks a random imposter, word, and discussion order, then writes them to Firebase.
+ * All players read these values through listenToRoom().
+ */
 function startGame(room) {
 
-  const roomRef = db.ref("games/Word_Imposter/rooms/" + currentRoom);
+  const roomRef     = db.ref("games/Word_Imposter/rooms/" + currentRoom);
+  const players     = Object.keys(room.players);
+  const playerCount = players.length;
 
-  const players = Object.keys(room.players);
-  const playerCount = room.players ? Object.keys(room.players).length : 0;
-
+  // Pick a random imposter from the player list
   const imposter = players[Math.floor(Math.random() * players.length)];
 
-  const category = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+  // Pick a random word: category → subCategory → word  (using words.js)
+  const category    = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
   const subCategory = category[Math.floor(Math.random() * category.length)];
-  const word = subCategory[Math.floor(Math.random() * subCategory.length)];
+  const word        = subCategory[Math.floor(Math.random() * subCategory.length)];
 
-
-  // arrange the players in random order for the meeting discussion and store it in the database to loop through it in the startMeeting function
+  // Shuffle player order for the discussion phase
   const playerOrder = players.sort(() => Math.random() - 0.5);
 
-
   roomRef.update({
-    state: "playing",
-    playerCount: playerCount,
+    state:        "playing",
+    playerCount:  playerCount,
     alivePlayers: playerCount,
-
     game: {
-      round: 1,
-      imposter: imposter,
-      word: word,
+      round:               1,
+      imposter:            imposter,
+      word:                word,
       currentSpeakerIndex: 0,
-      discussionOrder: playerOrder,
+      discussionOrder:     playerOrder,
     }
-
   });
-
 }
 
 
-// other players join the game
+// ═══════════════════════════════════════════════════════
+//  GAME JOIN  (all players)
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Runs on every client once startGame() has written word/imposter to Firebase.
+ * Sets up the meeting UI and shows each player their role for 3 seconds.
+ */
 async function joinStartedGame(room) {
 
   gameStarted = true;
-  const game = room.game;
+  const game        = room.game;
+  const playerCount = room.players ? Object.keys(room.players).length : 0;
 
   goToPanel("meeting");
 
-  const playerCount = room.players ? Object.keys(room.players).length : 0;
-
-
-  // create the meeting and voting tablets
+  // Build the meeting and voting player cards
   createDivs(document_MEETING_TABLET, playerCount, room);
   modifyMeetingTablet(playerCount);
   createDivs(document_VOTNG_TABLET, playerCount, room);
   document.getElementById('meeting-tablet-container').classList.remove("hidden");
 
-  // show the role for 3 seconds
+  // ── Role reveal: show word (or "IMPOSTER") for 3 seconds ──
   document_SHOW_ROLE_DIV.style.backgroundColor = "var(--card-bg)";
-  document_SHOW_ROLE_DIV.style.display = "flex";
+  document_SHOW_ROLE_DIV.style.display         = "flex";
+
   if (currentPlayer === game.imposter) {
     document_SHOW_ROLE_DIV.innerHTML = "<h1>You are the IMPOSTER</h1>";
     console.log("You are the IMPOSTER");
@@ -191,117 +215,42 @@ async function joinStartedGame(room) {
   }
 
   await wait(3000);
-  document_SHOW_ROLE_DIV.innerHTML = "";
+  document_SHOW_ROLE_DIV.innerHTML     = "";
   document_SHOW_ROLE_DIV.style.display = "none";
-
 
   startMeeting(room);
 }
 
 
+// ═══════════════════════════════════════════════════════
+//  MEETING PHASE
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Loops through all rounds and all players, giving each their discussion turn.
+ * After all rounds complete, moves everyone to the voting panel.
+ */
 async function startMeeting(room) {
 
   const playerCount = room.players ? Object.keys(room.players).length : 0;
 
+  // Outer loop: rounds
   for (let j = 0; j < room.settings.maxRounds; j++) {
+    // Inner loop: each player's turn within the round
     for (let i = 0; i < playerCount; i++) {
-      // console.log("player " + (i + 1) + " turn started");
-
       playerTurn(i, room, j + 1);
-      await wait((room.settings.eachPlayerDiscussionTime + 2) * 1000); // wait for 34 seconds for each player's turn
+      // Wait for the player's discussion time + 2s buffer before moving to next player
+      await wait((room.settings.eachPlayerDiscussionTime + 2) * 1000);
     }
 
+    // Reset tablet display for the next round
     createDivs(document_MEETING_TABLET, playerCount, room);
     modifyMeetingTablet(playerCount);
-
   }
-  // console.log("Meeting ended");
 
+  // All rounds done — hide meeting tablet and proceed to voting
   document.getElementById('meeting-tablet-container').classList.add("hidden");
   goToPanel("voting");
 
   showPlayAgainUI(room);
 }
-
-
-
-
-const WORD_LIST = [
-
-  /* Nature */
-  [
-    ["river", "waterfall", "ocean", "reef"],
-    ["valley", "canyon", "cliff", "glacier", "desert", "dune", "swamp", "cave", "forest", "jungle", "savanna", "meadow", "island"],
-    ["sunrise", "sunset", "rainbow", "storm", "thunder", "shadow"],
-    ["planet", "galaxy", "satellite"]
-  ],
-
-  /* Places & Structures */
-  [
-    ["building", "library", "castle", "pyramid"],
-    ["bridge", "harbor", "ladder"],
-    ["mirror", "candle", "lantern", "compass", "map"]
-  ],
-
-  /* Professions */
-  [
-    ["artist", "writer", "singer", "photographer"],
-    ["scientist", "engineer", "architect", "mechanic", "inventor"],
-    ["teacher", "doctor", "chef", "driver"],
-    ["explorer", "farmer", "gardener", "fisherman", "pilot", "detective", "tailor"]
-  ],
-
-  /* Actions */
-  [
-    ["running", "climbing", "jumping", "swimming", "dancing", "traveling", "exploring"],
-    ["writing", "drawing", "painting", "cooking", "building"],
-    ["thinking", "learning", "solving", "searching", "discovering"],
-    ["whispering", "laughing", "singing"]
-  ],
-
-  /* Feelings */
-  [
-    ["joy", "hope", "trust", "gratitude", "confidence", "excitement", "calmness"],
-    ["fear", "anger", "envy", "doubt", "loneliness"],
-    ["courage", "patience", "ambition", "pride", "determination"],
-    ["curiosity", "surprise", "wonder", "nostalgia"]
-  ],
-
-  /* Instruments & Tools */
-  [
-    ["guitar", "violin"],
-    ["piano"],
-    ["flute", "trumpet"],
-    ["drum"],
-    ["camera", "microscope", "binoculars", "telescope"],
-    ["notebook", "calculator", "keyboard", "typewriter"],
-    ["backpack", "helmet", "umbrella", "watch", "speaker", "projector"]
-  ],
-
-  /* Vehicles */
-  [
-    ["rocket", "spaceship", "airplane", "helicopter", "balloon", "parachute"],
-    ["submarine", "canoe", "yacht"],
-    ["train", "truck", "tractor", "bicycle", "motorcycle", "scooter", "skateboard", "sled"],
-    ["ambulance", "firetruck"]
-  ],
-
-  /* Games & Concepts */
-  [
-    ["puzzle", "chess", "maze"],
-    ["treasure", "adventure", "mission"],
-    ["challenge", "strategy", "victory", "defeat"],
-    ["alliance", "betrayal"],
-    ["mystery", "secret", "legend", "myth"],
-    ["signal", "code", "cipher"]
-  ],
-
-  /* Animals */
-  [
-    ["tiger", "wolf", "cheetah", "elephant", "gorilla", "panda", "kangaroo", "camel", "antelope", "squirrel", "hedgehog", "beaver"],
-    ["dolphin", "octopus"],
-    ["owl", "falcon", "parrot", "peacock"],
-    ["butterfly", "penguin"]
-  ]
-
-];
