@@ -1,6 +1,5 @@
 const PANEL_DIVS = document.querySelectorAll('div.panel');
-
-
+let gameStarted = false;
 
 const firebaseConfig = {
   apiKey: "AIzaSyADn8tGOng9AcBI3s-y-X49i6eoLetyPsE",
@@ -16,18 +15,6 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
-// Join room
-// db.ref("games/Word_Imposter/rooms/" + roomId + "/players/" + playerId)
-
-// Listen for updates
-// db.ref("games/Word_Imposter/rooms/" + roomId)
-//   .on("value", updateGameUI);
-
-// Auto removal when a player leaves
-// db.ref("games/Word_Imposter/rooms/" + roomId + "/players/" + playerId)
-//   .onDisconnect()
-//   .remove();
 
 
 function goToPanel(name) {
@@ -52,20 +39,25 @@ db.ref("games/Word_Imposter/rooms")
 
       const room = rooms[roomId];
       const playerCount = room.players ? Object.keys(room.players).length : 0;
-      const maxPlayers = room.settings.maxPlayers;
+      // const maxPlayers = room.settings.maxPlayers;
+
+      // Get host name from players object using host ID
+      const hostId = room.host;
+      const hostName = room.players?.[hostId]?.name ?? "Unknown";
 
       const div = document.createElement("div");
       div.className = "room-joining-div";
 
       div.innerHTML = `
-      <p>${roomId}</p>
-      <p>Players: ${playerCount}/${maxPlayers}</p>
-    `;
+        <div class="room-info">
+          <span class="room-id">${roomId}</span>
+          <span class="host-name">${hostName}</span>
+        </div>
+        <p>${playerCount}/${maxPlayers}</p>
+      `;
 
       div.onclick = () => joinRoom(roomId);
-
       container.appendChild(div);
-
     }
 
   });
@@ -82,8 +74,8 @@ const document_SHOW_ROLE_DIV = document.getElementById("show-role");
 
 
 function updatePlayersUI(room) {
-  console.log("update player ui");
-  console.log(room);
+  // console.log("update player ui, the room is :");
+  // console.log(room);
 
   document_LOBBY_ROOM_ID.innerText = "room id : " + room.roomID;
   document_LOBBY_HOST.innerText = "host : " + room.players[room.host].name;
@@ -112,18 +104,20 @@ async function startGameByHost() {
   const roomRef = db.ref("games/Word_Imposter/rooms/room_" + roomId);
 
   document_LOBBY_START_BUTTON.classList.add("hidden");
-  document_LOBBY_PANEL.innerHTML += "<h2>Starting Game in 3...</h2>";
+
+  // Use the dedicated countdown element instead of innerHTML +=
+  const countdown = document.getElementById("lobby-countdown");
+  countdown.innerText = "Starting Game in 3...";
   await wait(1000);
-  document_LOBBY_PANEL.innerHTML = document_LOBBY_PANEL.innerHTML.replace(/3\.\.\./, "2...");
+  countdown.innerText = "Starting Game in 2...";
   await wait(1000);
-  document_LOBBY_PANEL.innerHTML = document_LOBBY_PANEL.innerHTML.replace(/2\.\.\./, "1...");
+  countdown.innerText = "Starting Game in 1...";
   await wait(1000);
-  document_LOBBY_PANEL.innerHTML = document_LOBBY_PANEL.innerHTML.replace(/1\.\.\./, "...");
+  countdown.innerText = "";  // ← clears itself
 
   roomRef.update({
     state: "playing",
   });
-
 
 }
 
@@ -138,7 +132,7 @@ function wait(ms) {
 const document_MEETING_TABLET = document.getElementById("meeting-tablet");
 const document_VOTNG_TABLET = document.getElementById("voting-tablet");
 
-function createDivs(parentDIV, num) {
+function createDivs(parentDIV, num, room) {
   parentDIV.innerHTML = '';
 
   // 2. Loop 'num' times to create the child divs
@@ -148,7 +142,7 @@ function createDivs(parentDIV, num) {
 
     newDiv.id = `${parentDIV.id}-child-${i + 1}`; // Set a unique ID for the new div
     // 4. Customize the new div (optional)
-    newDiv.innerHTML = `<p>Div number ${i + 1}</p>`; // Add some text content
+    newDiv.innerHTML = `<p>${room.players[room.game.discussionOrder[i]].name}</p>`; // Add some text content
     newDiv.style.margin = "0px";
     newDiv.style.padding = "15px 20px"; // Set padding
     newDiv.style.backgroundColor = "#000"; // Set background color
@@ -169,32 +163,108 @@ function modifyMeetingTablet(numberOfPlayers) {
   }
 }
 
-createDivs(document_MEETING_TABLET, 7);
-modifyMeetingTablet(7);
+// createDivs(document_MEETING_TABLET, 7);
+// modifyMeetingTablet(7);
 
 
 // when 'i' index player's turn comes
-async function playerTurn(i, room) {
+const document_MEETING_ROUND = document.getElementById("meeting-round");
+async function playerTurn(i, room, round) {
+
+  document_MEETING_ROUND.innerText = `Round : ${round}/${room.settings.maxRounds}`;
 
   const div = document.getElementById(`meeting-tablet-child-${i + 1}`);
   div.style.backgroundColor = "var(--accent)";
-  div.style.color = "vat(--text-secondary)";
+  div.style.color = "var(--text-secondary)";
   div.style.width = "100%";
 
+  const timer = room.settings.eachPlayerDiscussionTime;
 
-  // TODO: add onclick="nextPlayerTurn()" and alos add a timer of 30 seconds for each player's turn
-  div.innerHTML = `<p>Player ${i + 1}</p> <p id='player${i+1}-timer'>30 sec</p>`;
+  div.innerHTML = `<p>${room.players[room.game.discussionOrder[i]].name}</p> <p id='player${i + 1}-timer'>${room.timer} sec</p>`;
   div.style.flexDirection = "row";
   div.style.justifyContent = "space-between";
 
 
-  for (let j = 30; j >= 0; j--) {
+  for (let j = timer  - 1; j >= 0; j--) {
     await wait(1000);
-    document.getElementById(`player${i+1}-timer`).innerText = `${j} sec`;
-    console.log(j);
+    document.getElementById(`player${i + 1}-timer`).innerText = `${j} sec`;
   }
 
-  console.log(`Player ${i + 1} turn ended`);
+}
 
 
+const document_CURRENT_USERNAME = document.getElementById("current-username");
+const document_USERNAME_INPUT = document.getElementById("username-input");
+var username = localStorage.getItem("username") ? localStorage.getItem("username") : "Player_" + Math.floor(Math.random() * 100);
+
+document_CURRENT_USERNAME.innerText = "Current Username: " + username;
+
+function setUserName() {
+  const tag = document_USERNAME_INPUT.value.trim().replaceAll(" ", "_");
+  if (username.length === 0) {
+    alert("Username cannot be empty");
+    return;
+  }
+
+  localStorage.setItem("username", tag);
+  username = tag;
+  document_CURRENT_USERNAME.innerText = "Current Username: " + username;
+  document_USERNAME_INPUT.value = "";
+
+}
+
+
+var maxPlayers = 6;
+var totalRounds = 2;
+var eachPlayerDiscussionTime = 20;
+
+document.getElementById('maxPlayer-input').addEventListener('input', function () {
+  maxPlayers = parseInt(this.value);
+  document.getElementById('maxPlayer-val').textContent = maxPlayers;
+});
+
+document.getElementById('totalRounds-input').addEventListener('input', function () {
+  totalRounds = parseInt(this.value);
+  document.getElementById('totalRounds-val').textContent = totalRounds;
+});
+
+document.getElementById('eachPlayerDiscussionTime-input').addEventListener('input', function () {
+  eachPlayerDiscussionTime = parseInt(this.value);
+  document.getElementById('discussionTime-val').textContent = eachPlayerDiscussionTime;
+});
+
+
+
+// UID - generated once, stored forever
+var UID = localStorage.getItem("uid");
+if (!UID) {
+  UID = "player_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+  localStorage.setItem("uid", UID);
+}
+
+
+// RESTART GAME
+function restartGame() {
+  gameJoined = false;
+  const roomRef = db.ref("games/Word_Imposter/rooms/" + currentRoom);
+
+  roomRef.update({
+    state: "lobby",
+    votes: null,
+    game: { round: 1 }
+  });
+}
+
+// UPDATE showPlayAgainUI — called when voting panel is shown
+function showPlayAgainUI(room) {
+  const btn = document.getElementById("play-again-btn");
+  const msg = document.getElementById("play-again-msg");
+
+  if (currentPlayer === room.host) {
+    btn.classList.remove("hidden");
+    msg.classList.add("hidden");
+  } else {
+    btn.classList.add("hidden");
+    msg.classList.remove("hidden");
+  }
 }

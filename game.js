@@ -2,50 +2,40 @@
 
 let currentRoom = null;
 let currentPlayer = null;
+let gameJoined = false;
 
 // Create a Room System
 function createRoom(playerName) {
 
   const roomId = Math.floor(Math.random() * 10000);
   const roomName = "room_" + roomId;
-  const playerID = "player_" + Date.now();
+  const playerID = UID;
 
   const roomRef = db.ref("games/Word_Imposter/rooms/" + roomName);
 
   roomRef.set({
     host: playerID,
     roomID: roomId,
-    password: "",
+    password: document.getElementById("room-password-input").value,
     state: "lobby",
     players: {
       [playerID]: {
         name: playerName,
-        score: 0
+        score: 0,
+        status: "alive"
       }
     },
     playerCount: 1,
     alivePlayers: 1,
     settings: {
-      eachPlayerDiscussionTime: 60,
-      maxPlayers: 8,
-      maxRounds: 5
+      eachPlayerDiscussionTime: eachPlayerDiscussionTime,
+      maxPlayers: maxPlayers,
+      maxRounds: totalRounds
     },
     game: {
       round: 1
     }
   });
-
-
-
-  db.ref("games/Word_Imposter/rooms/" + roomName)
-    .on("value", snapshot => {
-
-      const room = snapshot.val();
-      console.log("the room is ");
-      console.log(room);
-
-    });
-
 
 
   joinRoom(roomName, playerID);
@@ -56,36 +46,66 @@ function createRoom(playerName) {
 function joinRoom(roomName, playerId) {
 
   if (!playerId) {
-    playerId = "player_" + Date.now();
-    var playerName = "Player";
-
+    playerId = UID;
     const playerRef = db.ref("games/Word_Imposter/rooms/" + roomName + "/players/" + playerId);
-
-    playerRef.set({
-      name: playerName,
-      score: 0
-    });
-
-    // AUTO REMOVE PLAYER WHEN THEY LEAVE
-    playerRef.onDisconnect().remove();
+    playerRef.set({ name: username, score: 0 });
   }
+
+  // set onDisconnect, for BOTH host and joining players
+  const playerRef = db.ref("games/Word_Imposter/rooms/" + roomName + "/players/" + playerId);
+  playerRef.onDisconnect().remove();
 
   currentRoom = roomName;
   currentPlayer = playerId;
 
   listenToRoom(roomName);
-
   goToPanel("lobby");
+}
+
+
+// Leave Room
+function leaveRoom() {
+  gameJoined = false;
+  gameStarted = false;
+
+  if (currentRoom && currentPlayer) {
+    // Remove player from database
+    const playerRef = db.ref("games/Word_Imposter/rooms/" + currentRoom + "/players/" + currentPlayer);
+    playerRef.remove();
+
+    // Detach the Firebase listener so it stops firing
+    db.ref("games/Word_Imposter/rooms/" + currentRoom).off();
+
+    // Reset current state
+    currentRoom = null;
+    currentPlayer = null;
+  }
+
+  goToPanel("join-room");
 }
 
 
 // Listen to Room Updates
 function listenToRoom(roomName) {
-
   db.ref("games/Word_Imposter/rooms/" + roomName)
     .on("value", snapshot => {
 
       const room = snapshot.val();
+
+      // If room is empty or no players, delete it
+      if (!room || !room.players || Object.keys(room.players).length === 0) {
+        db.ref("games/Word_Imposter/rooms/" + roomName).remove();
+        return;
+      }
+
+      // Redirect everyone back to lobby on restart
+      if (room.state === "lobby" && gameStarted) {
+        gameStarted = false;
+        gameJoined = false;
+        updatePlayersUI(room);
+        goToPanel("lobby");
+        return;
+      }
 
       updatePlayersUI(room);
 
@@ -95,7 +115,8 @@ function listenToRoom(roomName) {
       }
 
       // everyone joins the started game
-      if (room.state === "playing" && room.game.word) {
+      if (room.state === "playing" && room.game.word && !gameJoined) {
+        gameJoined = true;
         joinStartedGame(room);
       }
 
@@ -129,7 +150,6 @@ function startGame(room) {
     playerCount: playerCount,
     alivePlayers: playerCount,
 
-    // TODO: arrange the order of meeting randomly in the room.game.playerOrder and loop through it in startMeeting function
     game: {
       round: 1,
       imposter: imposter,
@@ -140,20 +160,13 @@ function startGame(room) {
 
   });
 
-
-
-
-
-  console.log(room);
-
 }
 
 
 // other players join the game
 async function joinStartedGame(room) {
 
-  console.log("Game started");
-
+  gameStarted = true;
   const game = room.game;
 
   goToPanel("meeting");
@@ -162,9 +175,9 @@ async function joinStartedGame(room) {
 
 
   // create the meeting and voting tablets
-  createDivs(document_MEETING_TABLET, playerCount);
+  createDivs(document_MEETING_TABLET, playerCount, room);
   modifyMeetingTablet(playerCount);
-  createDivs(document_VOTNG_TABLET, playerCount);
+  createDivs(document_VOTNG_TABLET, playerCount, room);
   document.getElementById('meeting-tablet-container').classList.remove("hidden");
 
   // show the role for 3 seconds
@@ -188,22 +201,27 @@ async function joinStartedGame(room) {
 
 
 async function startMeeting(room) {
-  console.log("Meeting started");
 
   const playerCount = room.players ? Object.keys(room.players).length : 0;
-  console.log(room.game.discussionOrder[0]);
-  console.log(playerCount);
-  for (let i = 0; i < playerCount; i++) {
-    console.log("player " + (i + 1) + " turn started");
-    playerTurn(i, room);
 
-    await wait(34 * 1000); // wait for 34 seconds for each player's turn
+  for (let j = 0; j < room.settings.maxRounds; j++) {
+    for (let i = 0; i < playerCount; i++) {
+      // console.log("player " + (i + 1) + " turn started");
+
+      playerTurn(i, room, j + 1);
+      await wait((room.settings.eachPlayerDiscussionTime + 2) * 1000); // wait for 34 seconds for each player's turn
+    }
+
+    createDivs(document_MEETING_TABLET, playerCount, room);
+    modifyMeetingTablet(playerCount);
+
   }
-
-  console.log("Meeting ended");
+  // console.log("Meeting ended");
 
   document.getElementById('meeting-tablet-container').classList.add("hidden");
   goToPanel("voting");
+
+  showPlayAgainUI(room);
 }
 
 

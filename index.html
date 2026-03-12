@@ -45,9 +45,11 @@
           </svg>
         </button>
 
+        <h2>Game Menu</h2>
         <button onclick="goToPanel('create-room')">Create A Room</button>
         <button onclick="goToPanel('join-room')">Join A Public Room</button>
-        <input type="text" style="margin-top: 20px; padding: 10px; border-radius: 5px; border: none; width: 200px;"
+        <input id="password-input-for-joining" type="text"
+          style="margin-top: 20px; padding: 10px; border-radius: 5px; border: none; width: 200px;"
           placeholder="Enter Room Code">
         <button onclick="goToPanel('loading-room')">Join A Private Room</button>
       </div>
@@ -73,7 +75,10 @@
             </g>
           </svg>
         </button>
+        <div>
+          <h2>SETTINGS</h2>
 
+        </div>
 
       </div>
 
@@ -99,6 +104,13 @@
           </svg>
         </button>
 
+        <div>
+          <h2>ACCOUNT</h2>
+          <p id="current-username"></p>
+          <input id="username-input" type="text" placeholder="Enter your username"
+            style="padding: 10px; border-radius: 5px; border: none; color:black; margin-top: 20px;">
+          <button onclick="setUserName()">Submit</button>
+        </div>
 
       </div>
 
@@ -124,6 +136,10 @@
           </svg>
         </button>
 
+        <div>
+          <h2>ABOUT</h2>
+
+        </div>
 
       </div>
 
@@ -149,6 +165,24 @@
           </svg>
         </button>
 
+        <div>
+          <h2>CREATE ROOM</h2>
+
+          <p>Max Players : <span id="maxPlayer-val">6</span></p>
+          <input id="maxPlayer-input" type="range" min="3" max="10" value="6">
+
+          <p>Total Rounds : <span id="totalRounds-val">2</span></p>
+          <input id="totalRounds-input" type="range" min="1" max="5" value="2">
+
+          <p>Time each player has while meeting : <span id="discussionTime-val">20</span> sec</p>
+          <input id="eachPlayerDiscussionTime-input" type="range" min="10" max="60" value="25">
+
+
+          <p>Type The Password for making it Private</p>
+          <input id="room-password-input" type="text" placeholder="type you passowrd">
+
+          <button onclick="createRoom(username)">Create</button>
+        </div>
 
       </div>
 
@@ -173,25 +207,30 @@
             </g>
           </svg>
         </button>
+
+        <h2>JOIN ROOM</h2>
         <div id="rooms">
+
           <div id="join-room-0" class="room-joining-div" onclick="goToPanel('play')">
             <p>_host name_</p>
-            <p>Players: 3/6</p>
+            <p>3/6</p>
           </div>
           <div id="join-room-1" class="room-joining-div" onclick="goToPanel('play')">
             <p>_host name 1_</p>
-            <p>Players: 2/6</p>
+            <p>2/6</p>
           </div>
           <div id="join-room-2" class="room-joining-div" onclick="goToPanel('play')">
             <p>_host name 2_</p>
-            <p>Players: 4/6</p>
+            <p>4/6</p>
           </div>
         </div>
       </div>
+
+
       <div id="lobby-panel" class="panel hidden">
         <button
           style="background-color: var(--card-bg) !important; padding: 0; border-radius: 50%; border: none; cursor: pointer; height: 40px; width: 40px; position: absolute; top: 10px; left: 10px;"
-          onclick="goToPanel('join-room');">
+          onclick="leaveRoom();">
           <svg fill="#ffffff" height="40px" width="40px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
             xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 219.15 219.15" xml:space="preserve"
             stroke="#ffffff">
@@ -210,16 +249,20 @@
           </svg>
         </button>
 
+        <h2>Lobby</h2>
         <p>you are in lobby wait for the game to start.</p>
 
         <p id="lobby-room-id">room id : </p>
         <p id="lobby-host">host : </p>
         <p id="lobby-player-count">player count : </p>
+        <br>
+
         <div id="lobby-player-list" style="margin-top: 5px;">
           <p id="player1">player_1</p>
           <p id="player2">player_2</p>
         </div>
 
+        <p id="lobby-countdown" style="margin-top: 10px; font-weight: bold;"></p>
         <button id="lobby-start-button" onclick="startGameByHost()">Start</button>
 
       </div>
@@ -234,6 +277,7 @@
           <div id="meeting-tablet">
 
           </div>
+          <p id="meeting-round">round : 1/2</p>
         </div>
 
       </div>
@@ -242,6 +286,14 @@
         <h2>vote to who you think is the imposter</h2>
         <div id="voting-tablet">
 
+        </div>
+
+        <!-- ADD THIS -->
+        <div id="play-again-container" style="margin-top: 30px; text-align: center;">
+          <button id="play-again-btn" onclick="restartGame()">🔁 Play Again</button>
+          <p id="play-again-msg" class="hidden" style="color: var(--text-secondary); font-size: 0.85rem;">
+            Waiting for host to restart...
+          </p>
         </div>
       </div>
 
@@ -254,4 +306,5 @@
   <script src="game.js"></script>
 
   <!-- end of html -->
+
 </html>

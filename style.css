@@ -56,9 +56,9 @@ div {
 
 .room-joining-div {
   background-color: var(--border);
-  padding: 15px 20px;
+  padding: 13px;
   border-radius: 10px;
-  width: 350px;
+  width: 320px;
   text-align: center;
   cursor: pointer;
   margin: 0;
@@ -78,6 +78,7 @@ div {
 }
 
 #rooms {
+  margin-top: 30px !important;
   background-color: #000;
   padding: 15px;
   border-radius: 25px;
@@ -156,4 +157,51 @@ div {
 
 .child-div {
   align-items: center;
+}
+
+#join-room-panel h2 {
+  margin-top: 20px;
+}
+
+
+#create-room-panel div {
+  display: grid;
+  width: 39vw;
+  gap: 10px;
+  justify-content: center;
+}
+
+#create-room-panel input {
+  color: #000;
+  padding: 8px;
+  border-radius: 10px;
+  border: none;
+
+  margin-bottom: 20px;
+}
+
+#create-room-panel h2 {
+  margin: 30px auto;
+  margin-top: 10px;
+}
+
+
+.room-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  margin: 0;
+}
+
+.room-id {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+}
+
+.host-name {
+  font-size: 0.9rem;
+  color: #aab0bc;
+  /* slightly muted so it feels secondary */
 }
