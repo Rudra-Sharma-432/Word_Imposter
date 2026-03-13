@@ -61,8 +61,113 @@
       <!-- ───────────── ABOUT ───────────── -->
       <div id="about-panel" class="panel hidden">
         <button class="back-btn" onclick="goToPanel('main-menu')">&#8592;</button>
-        <div>
-          <h2>ABOUT</h2>
+
+        <div id="about-wrapper">
+
+          <h1 id="about-title">&#129399; Word Imposter</h1>
+
+          <!-- ── Game Description ── -->
+          <div class="about-card">
+            <p class="about-card-label">ABOUT THE GAME</p>
+            <p class="about-body-text">
+              Word Imposter is a <strong>social deduction party game</strong> where players
+              try to identify the hidden Imposter among them. Everyone receives a secret word
+              — except one player. The <span class="highlight">Imposter</span> must blend in
+              during the discussion and avoid being exposed.
+            </p>
+            <div class="about-badge-row">
+              <span class="about-badge">&#128101; 3–10 Players</span>
+              <span class="about-badge">&#127922; Party Game</span>
+              <span class="about-badge">&#128373; Social Deduction</span>
+            </div>
+          </div>
+
+          <!-- ── How to Play ── -->
+          <div class="about-card">
+            <p class="about-card-label">HOW TO PLAY</p>
+
+            <div class="about-step">
+              <div class="step-number">1</div>
+              <div class="about-step-body">
+                <p class="step-title">Join a Room</p>
+                <p class="about-body-text">One player creates a room and shares the Room ID with friends. Others can join from the public list or enter a room code directly.</p>
+              </div>
+            </div>
+
+            <div class="about-divider"></div>
+
+            <div class="about-step">
+              <div class="step-number">2</div>
+              <div class="about-step-body">
+                <p class="step-title">Roles Are Assigned</p>
+                <p class="about-body-text">When the game starts, every player receives the same secret word — except one. That player secretly becomes the <span class="highlight">Imposter</span> and receives no word.</p>
+              </div>
+            </div>
+
+            <div class="about-divider"></div>
+
+            <div class="about-step">
+              <div class="step-number">3</div>
+              <div class="about-step-body">
+                <p class="step-title">Discussion Round</p>
+                <p class="about-body-text">Players take turns describing the word without saying it directly. The Imposter must listen carefully and bluff like they know the word.</p>
+              </div>
+            </div>
+
+            <div class="about-divider"></div>
+
+            <div class="about-step">
+              <div class="step-number">4</div>
+              <div class="about-step-body">
+                <p class="step-title">Vote!</p>
+                <p class="about-body-text">After all players have spoken, everyone votes for who they think is the Imposter. If the Imposter survives the vote — they win!</p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ── Tips ── -->
+          <div class="about-card">
+            <p class="about-card-label">&#128161; TIPS</p>
+            <div class="tip-row">
+              <span class="tip-dot"></span>
+              <p class="about-body-text">Be descriptive but don't give the word away — subtlety wins.</p>
+            </div>
+            <div class="tip-row">
+              <span class="tip-dot"></span>
+              <p class="about-body-text">Pay close attention to players who seem vague or overly generic.</p>
+            </div>
+            <div class="tip-row">
+              <span class="tip-dot"></span>
+              <p class="about-body-text">If you're the Imposter, listen to others first to pick up clues.</p>
+            </div>
+          </div>
+
+          <!-- ── Credits ── -->
+          <div class="about-card">
+            <p class="about-card-label">CREDITS</p>
+            <div class="credit-row">
+              <span class="credit-key">Creator</span>
+              <span class="credit-val">Rudra Sharma</span>
+            </div>
+            <div class="credit-row">
+              <span class="credit-key">Built With</span>
+              <span class="credit-val">HTML &bull; CSS &bull; JavaScript &bull; Firebase</span>
+            </div>
+            <div class="credit-row">
+              <span class="credit-key">Game Type</span>
+              <span class="credit-val">Social Deduction Party Game</span>
+            </div>
+            <div class="credit-row">
+              <span class="credit-key">Version</span>
+              <span class="credit-val">1.0</span>
+            </div>
+            <div class="credit-row">
+              <span class="credit-key">Year</span>
+              <span class="credit-val">2026</span>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -83,7 +188,6 @@
           <input id="eachPlayerDiscussionTime-input" type="range" min="10" max="60" value="20">
 
           <p>Type the password to make it private</p>
-          <!-- TYPO FIX: "you passowrd" → "your password" -->
           <input id="room-password-input" type="text" placeholder="Type your password">
 
           <button onclick="createRoom(username)">Create</button>
@@ -102,7 +206,6 @@
       <div id="lobby-panel" class="panel hidden">
         <button class="back-btn" onclick="leaveRoom()">&#8592;</button>
         <h2>Lobby</h2>
-        <!-- TYPO FIX: "you are in lobby" → "You are in the lobby" -->
         <p>You are in the lobby, wait for the game to start.</p>
 
         <p id="lobby-room-id">room id : </p>

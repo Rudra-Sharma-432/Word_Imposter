@@ -235,3 +235,186 @@ div {
   font-size: 0.9rem;
   color: #aab0bc; /* muted so it reads as secondary info */
 }
+
+
+/* ═══════════════════════════════════════════════════
+   ABOUT PANEL
+   ═══════════════════════════════════════════════════ */
+
+/* Scrollable column that wraps all cards */
+#about-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 480px;         /* keeps it from stretching full-screen */
+  margin: 56px auto 40px;   /* top gap clears the back button */
+  padding: 0 16px;
+}
+
+/* Page title inside the about panel */
+#about-title {
+  font-size: 1.4rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+/* ── Shared card shell ── */
+.about-card {
+  width: 100%;
+  background-color: #111827;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 0;               /* override the global div margin */
+}
+
+/* Small all-caps label at the top of each card */
+.about-card-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--accent-hover);
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Regular paragraph text inside cards */
+.about-body-text {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* Accent colour for "Imposter" mentions */
+.highlight {
+  color: var(--accent-hover);
+  font-weight: bold;
+}
+
+/* ── Badges row (Description card) ── */
+.about-badge-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.about-badge {
+  background-color: #1f2c3f;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ── How to Play steps ── */
+.about-step {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 0;
+  width: 100%;
+}
+
+.about-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  margin: 0;
+}
+
+/* Numbered circle */
+.step-number {
+  min-width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Bold step heading */
+.step-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Thin horizontal rule between steps */
+.about-divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--border);
+  margin: 0;
+}
+
+/* ── Tips rows ── */
+.tip-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  width: 100%;
+}
+
+/* Accent bullet dot */
+.tip-dot {
+  min-width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 7px; /* vertically aligns with first line of text */
+}
+
+/* ── Credits rows ── */
+.credit-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.credit-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.credit-key {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.credit-val {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  text-align: right;
+}

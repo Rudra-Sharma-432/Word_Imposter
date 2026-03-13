@@ -14,8 +14,7 @@ const WORD_LIST = [
   /* ── Nature ── */
   [
     ["river", "waterfall", "ocean", "reef"],
-    ["valley", "canyon", "cliff", "glacier", "desert", "dune", "swamp", "cave",
-     "forest", "jungle", "savanna", "meadow", "island"],
+    ["valley", "canyon", "cliff", "glacier", "desert", "dune", "swamp", "cave", "forest", "jungle", "savanna", "meadow", "island"],
     ["sunrise", "sunset", "rainbow", "storm", "thunder", "shadow"],
     ["planet", "galaxy", "satellite"]
   ],
@@ -82,8 +81,7 @@ const WORD_LIST = [
 
   /* ── Animals ── */
   [
-    ["tiger", "wolf", "cheetah", "elephant", "gorilla", "panda",
-     "kangaroo", "camel", "antelope", "squirrel", "hedgehog", "beaver"],
+    ["tiger", "wolf", "cheetah", "elephant", "gorilla", "panda", "kangaroo", "camel", "antelope", "squirrel", "hedgehog", "beaver"],
     ["dolphin", "octopus"],
     ["owl", "falcon", "parrot", "peacock"],
     ["butterfly", "penguin"]

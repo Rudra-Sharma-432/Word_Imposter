@@ -211,11 +211,11 @@ async function playerTurn(i, room, round) {
 
   // Highlight the active player's card
   div.style.backgroundColor = "var(--accent)";
-  div.style.color            = "var(--text-secondary)";
-  div.style.width            = "100%";
-  div.style.flexDirection    = "row";
-  div.style.justifyContent   = "space-between";
-  div.innerHTML              = `
+  div.style.color           = "var(--text-secondary)";
+  div.style.width           = "100%";
+  div.style.flexDirection   = "row";
+  div.style.justifyContent  = "space-between";
+  div.innerHTML             = `
     <p>${room.players[room.game.discussionOrder[i]].name}</p>
     <p id='player${i + 1}-timer'>${timer} sec</p>
   `;
@@ -262,8 +262,8 @@ function setUserName() {
 // ═══════════════════════════════════════════════════════
 
 // Default values (must match the HTML range input defaults in index.html)
-var maxPlayers             = 6;
-var totalRounds            = 2;
+var maxPlayers               = 6;
+var totalRounds              = 2;
 var eachPlayerDiscussionTime = 20;
 
 document.getElementById('maxPlayer-input').addEventListener('input', function () {
